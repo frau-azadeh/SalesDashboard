@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Products";
+    var role = Context.Session.GetString("Role");
+    bool isPurchasing = role == "Purchasing";
+}
+
+<div class="max-w-6xl mx-auto py-10 px-4">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">📦 Product List</h1>
+
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50 text-gray-600 text-sm font-medium text-left">
+                <tr>
+                    <th class="px-6 py-3">ID</th>
+                    <th class="px-6 py-3">Name</th>
+                    <th class="px-6 py-3">Price</th>
+                    <th class="px-6 py-3">Stock</th>
+                    <th class="px-6 py-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productTable" class="bg-white divide-y divide-gray-100 text-sm">
+                <!-- Filled by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    @if (isPurchasing)
+    {
+        <div class="mt-8 max-w-md">
+            <h2 class="text-xl font-bold text-gray-700 mb-4">Add / Edit Product</h2>
+            <form id="productForm" class="space-y-4">
+                <input type="hidden" id="productId" />
+                <input id="name" class="w-full px-4 py-2 border rounded" placeholder="Name" required />
+                <input id="price" type="number" class="w-full px-4 py-2 border rounded" placeholder="Price" required />
+                <input id="stock" type="number" class="w-full px-4 py-2 border rounded" placeholder="Stock" required />
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">Save</button>
+            </form>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        const isPurchasing = '@role' === 'Purchasing';
+
+        fetch("/api/products")
+            .then(res => res.json())
+            .then(data => {
+                const table = document.getElementById("productTable");
+                table.innerHTML = "";
+                data.forEach(p => {
+                    table.innerHTML += `
+                        <tr>
+                            <td class="px-6 py-3">${p.id}</td>
+                            <td class="px-6 py-3">${p.name}</td>
+                            <td class="px-6 py-3">${p.price}</td>
+                            <td class="px-6 py-3">${p.stock}</td>
+                            <td class="px-6 py-3 space-x-2">
+                                ${isPurchasing ? `
+                                    <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, ${p.stock})" class="text-yellow-600 hover:underline">Edit</button>
+                                    <button onclick="deleteProduct(${p.id})" class="text-red-600 hover:underline">Delete</button>
+                                ` : ''}
+                            </td>
+                        </tr>`;
+                });
+            });
+
+        if (isPurchasing) {
+            document.getElementById("productForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const id = document.getElementById("productId").value;
+                const name = document.getElementById("name").value;
+                const price = parseInt(document.getElementById("price").value);
+                const stock = parseInt(document.getElementById("stock").value);
+
+                const method = id ? "PUT" : "POST";
+                const url = id ? `/api/products/${id}` : "/api/products";
+
+                fetch(url, {
+                    method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, price, stock })
+                })
+                .then(() => location.reload());
+            });
+
+            window.editProduct = function (id, name, price, stock) {
+                document.getElementById("productId").value = id;
+                document.getElementById("name").value = name;
+                document.getElementById("price").value = price;
+                document.getElementById("stock").value = stock;
+            };
+
+            window.deleteProduct = function (id) {
+                if (confirm("Are you sure?")) {
+                    fetch(`/api/products/${id}`, { method: "DELETE" }).then(() => location.reload());
+                }
+            };
+        }
+    </script>
+}
