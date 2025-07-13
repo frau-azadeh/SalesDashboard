@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "داشبورد";
+}
+
+<div class="p-6 text-center">
+    <h1 class="text-2xl font-bold mb-4">سلام، @ViewBag.Username عزیز 👋</h1>
+    <p class="text-lg">شما به عنوان <strong>@ViewBag.Role</strong> وارد شده‌اید.</p>
+
+    <a href="/Account/Logout" class="mt-6 inline-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+        خروج
+    </a>
+</div>
