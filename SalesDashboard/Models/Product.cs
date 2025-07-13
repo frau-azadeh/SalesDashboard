@@ -1,11 +1,10 @@
-﻿// Models/Product.cs
-namespace SalesDashboard.Models
+﻿namespace SalesDashboard.Models
 {
     public class Product
     {
-        public int Id { get; set; }  // Auto-increment
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        public int Stock { get; set; } // تعداد موجودی
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int Price { get; set; }
+        public int Stock { get; set; }
     }
 }
