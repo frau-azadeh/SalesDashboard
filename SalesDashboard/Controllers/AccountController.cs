@@ -4,7 +4,6 @@ namespace SalesDashboard.Controllers
 {
     public class AccountController : Controller
     {
-        // اطلاعات کاربران به صورت ثابت (mock)
         private readonly Dictionary<string, (string Password, string Role)> users = new()
         {
             { "admin", ("admin1234", "Admin") },
@@ -14,24 +13,17 @@ namespace SalesDashboard.Controllers
             { "purches", ("purches1234", "Purchasing") },
         };
 
-        // GET: نمایش فرم ورود
         [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
+        public IActionResult Login() => View();
 
-        // POST: پردازش اطلاعات ورود
         [HttpPost]
         public IActionResult Login(string username, string password)
         {
             if (users.TryGetValue(username, out var userInfo) && userInfo.Password == password)
             {
-                // ذخیره نام کاربری و نقش در سشن
                 HttpContext.Session.SetString("Username", username);
                 HttpContext.Session.SetString("Role", userInfo.Role);
-
-                return RedirectToAction("Index", "Dashboard");
+                return RedirectToAction("Index", "Products");
             }
 
             ViewBag.Error = "نام کاربری یا رمز عبور اشتباه است.";
