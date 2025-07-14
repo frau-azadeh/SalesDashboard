@@ -4,9 +4,10 @@ namespace SalesDashboard.Controllers
 {
     public class ProductsController : Controller
     {
+        // GET: /Products
         public IActionResult Index()
         {
-            return View();
+            return View(); // باز کردن فایل Views/Products/Index.cshtml
         }
     }
 }
