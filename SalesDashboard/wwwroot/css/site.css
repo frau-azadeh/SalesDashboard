@@ -771,10 +771,6 @@ video {
   --tw-gradient-to: #93c5fd var(--tw-gradient-to-position);
 }
 
-.p-4 {
-  padding: 1rem;
-}
-
 .p-6 {
   padding: 1.5rem;
 }
@@ -818,6 +814,10 @@ video {
 
 .text-center {
   text-align: center;
+}
+
+.font-vazir {
+  font-family: Vazir, sans-serif;
 }
 
 .text-2xl {
@@ -931,6 +931,16 @@ video {
 
 body{
   direction:rtl;
+}
+
+@font-face {
+  font-family: 'Vazir';
+
+  src: url('/fonts/Vazir/Vazir.woff2') format('woff2'), url('/fonts/Vazir/Vazir.woff') format('woff');
+
+  font-weight: normal;
+
+  font-style: normal;
 }
 
 .hover\:bg-blue-600:hover {
