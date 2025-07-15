@@ -6,7 +6,7 @@ using SalesDashboard.Data; // محل DbContext
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ اتصال به دیتابیس SQL Server
+// Connect to DataBase
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
