@@ -7,7 +7,11 @@ module.exports = {
         "../wwwroot/js/**/*.js"      // (در صورت استفاده از فایل‌های JS)
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                vazir: ['Vazir', 'sans-serif'],
+            },
+        },
     },
     plugins: [],
 }
