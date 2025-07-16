@@ -110,3 +110,65 @@ function showToast(text, color) {
         className: "font-vazir text-sm"
     }).showToast();
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const invoiceForm = document.getElementById("invoiceForm");
+    const productSelect = document.getElementById("productSelect");
+    const customerSelect = document.getElementById("customerSelect");
+    const quantityInput = document.getElementById("quantity");
+    const invoiceItems = document.getElementById("invoiceItems");
+
+    let selectedProducts = [];
+
+    // افزودن به جدول
+    window.addToInvoice = () => {
+        const productId = parseInt(productSelect.value);
+        const productName = productSelect.options[productSelect.selectedIndex].text;
+        const unitPrice = parseInt(document.getElementById("unitPrice").value);
+        const quantity = parseInt(quantityInput.value);
+
+        if (!productId || !quantity) return;
+
+        selectedProducts.push({ productId, quantity, unitPrice });
+
+        invoiceItems.innerHTML += `
+            <tr>
+                <td class="px-4 py-2">${productName}</td>
+                <td class="px-4 py-2">${quantity}</td>
+                <td class="px-4 py-2">${unitPrice}</td>
+                <td class="px-4 py-2">${unitPrice * quantity}</td>
+            </tr>
+        `;
+    };
+
+    // ثبت نهایی فاکتور
+    invoiceForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const customerId = parseInt(customerSelect.value);
+        const productIds = selectedProducts.map(p => p.productId);
+        const quantities = selectedProducts.map(p => p.quantity);
+
+        try {
+            const response = await axios.post("/api/invoice", {
+                customerId,
+                productIds,
+                quantities
+            });
+
+            alert(response.data.message);
+            window.location.reload();
+        } catch (err) {
+            alert("❌ خطا در ثبت فاکتور: " + err.response?.data || err.message);
+        }
+    });
+
+    // انتخاب محصول => قیمت نمایش داده شود
+    productSelect.addEventListener("change", async () => {
+        const id = parseInt(productSelect.value);
+        if (!id) return;
+
+        const res = await axios.get(`/api/productsapi/${id}`);
+        document.getElementById("unitPrice").value = res.data.price;
+    });
+});
