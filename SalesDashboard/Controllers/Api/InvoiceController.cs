@@ -3,15 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SalesDashboard.Data;
 using SalesDashboard.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SalesDashboard.Controllers.Api
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class InvoiceController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -27,14 +23,12 @@ namespace SalesDashboard.Controllers.Api
             var role = HttpContext.Session.GetString("Role");
             var username = HttpContext.Session.GetString("Username");
 
-            // فقط کاربران نیروی فروش دسترسی دارند
             if (role != "Sales")
-                return Unauthorized("You are not authorized to create invoices.");
+                return Unauthorized("شما اجازه ثبت فاکتور ندارید.");
 
             if (model == null || model.ProductIds == null || model.ProductIds.Count == 0)
-                return BadRequest("Invalid invoice data.");
+                return BadRequest("اطلاعات فاکتور ناقص است.");
 
-            // ساخت فاکتور
             var invoice = new Invoice
             {
                 CustomerId = model.CustomerId,
@@ -50,10 +44,10 @@ namespace SalesDashboard.Controllers.Api
 
                 var product = await _context.Products.FindAsync(productId);
                 if (product == null)
-                    return NotFound($"Product with ID {productId} not found.");
+                    return NotFound($"محصول با شناسه {productId} پیدا نشد.");
 
                 if (product.Stock < quantity)
-                    return BadRequest($"Product '{product.Name}' does not have enough stock.");
+                    return BadRequest($"موجودی '{product.Name}' کافی نیست.");
 
                 product.Stock -= quantity;
 
@@ -65,10 +59,10 @@ namespace SalesDashboard.Controllers.Api
                 });
             }
 
-            _context.Invoices.Add(invoice);
+            await _context.Invoices.AddAsync(invoice);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Invoice created successfully." });
+            return Ok(new { message = "✅ فاکتور با موفقیت ثبت شد." });
         }
     }
 
