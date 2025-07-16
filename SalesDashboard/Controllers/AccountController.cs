@@ -14,7 +14,13 @@ namespace SalesDashboard.Controllers
         };
 
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            if (HttpContext.Session.GetString("Username") != null)
+                return RedirectToAction("Index", "Products");
+
+            return View();
+        }
 
         [HttpPost]
         public IActionResult Login(string username, string password)
@@ -23,6 +29,7 @@ namespace SalesDashboard.Controllers
             {
                 HttpContext.Session.SetString("Username", username);
                 HttpContext.Session.SetString("Role", userInfo.Role);
+
                 return RedirectToAction("Index", "Products");
             }
 
