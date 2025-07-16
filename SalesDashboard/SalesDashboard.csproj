@@ -15,6 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Views\NewFolder\" />
 	  <Folder Include="wwwroot\css\" />
 	</ItemGroup>
 

@@ -1,0 +1,12 @@
+﻿@inject IHttpContextAccessor accessor
+@{
+    var username = accessor.HttpContext?.Session.GetString("Username");
+}
+
+@if (!string.IsNullOrEmpty(username))
+{
+    <div class="text-sm text-gray-800 font-vazir">
+        خوش آمدی، <strong>@username</strong> |
+        <a href="/Account/Logout" class="text-blue-500 hover:underline">خروج</a>
+    </div>
+}
