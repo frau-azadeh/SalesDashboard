@@ -8,7 +8,7 @@ namespace SalesDashboard.Models
         public int Id { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
 
-        public int CusomerId { get; set; }
+        public int CustomerId { get; set; }
         public Customer Customer { get; set; }
 
         public string CreatedBy { get; set; }
