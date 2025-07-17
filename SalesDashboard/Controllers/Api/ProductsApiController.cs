@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using SalesDashboard.Data;
 using SalesDashboard.Models;
 
-namespace SalesDashboard.Controllers.Api
+namespace SalesDashboard.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class ProductsApiController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -17,64 +17,49 @@ namespace SalesDashboard.Controllers.Api
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            var products = await _context.Products
-                .AsNoTracking()
-                .Select(p => new { p.Id, p.Name, p.Price, p.Stock })
-                .ToListAsync();
-
-            return Ok(products);
+            return await _context.Products.ToListAsync();
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var product = await _context.Products
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+                return NotFound();
 
-            return product == null ? NotFound() : Ok(product);
+            return product;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] Product product)
+        public async Task<ActionResult<Product>> PostProduct(Product product)
         {
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutProduct(int id, Product product)
+        {
+            if (id != product.Id)
+                return BadRequest();
+
+            _context.Entry(product).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
             if (product == null)
-                return BadRequest("اطلاعات محصول نامعتبر است.");
-
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
-
-            return Ok(product);
-        }
-
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Product updated)
-        {
-            if (updated == null || id != updated.Id)
-                return BadRequest("شناسه ناهماهنگ است.");
-
-            var product = await _context.Products.FindAsync(id);
-            if (product == null) return NotFound();
-
-            product.Name = updated.Name;
-            product.Price = updated.Price;
-            product.Stock = updated.Stock;
-
-            await _context.SaveChangesAsync();
-            return Ok(product);
-        }
-
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null) return NotFound();
+                return NotFound();
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
     }
