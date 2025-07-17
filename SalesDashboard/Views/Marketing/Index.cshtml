@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "مدیریت مشتریان";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var role = Context.Session.GetString("Role") ?? "";
+    bool canManage = role == "Marketing" || role == "Admin";
+}
+
+<div class="p-6 bg-gray-50 min-h-screen">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="p-6 bg-white rounded shadow">
+            <h2 class="text-xl font-bold mb-4">لیست مشتریان</h2>
+            <table class="w-full table-auto text-right">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-4 py-2">نام کامل</th>
+                        <th class="px-4 py-2">شرکت</th>
+                        <th class="px-4 py-2">موبایل</th>
+                        @if (canManage)
+                        {
+                            <th class="px-4 py-2">عملیات</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody id="customerList"></tbody>
+            </table>
+        </div>
+
+        @if (canManage)
+        {
+            <div class="lg:col-span-2 p-6 bg-white rounded shadow">
+                <h2 class="text-xl font-bold mb-4">افزودن/ویرایش مشتری</h2>
+                <form id="customerForm" class="space-y-4">
+                    <input type="hidden" id="customerId" name="id" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input class="border p-2 rounded" id="fullName" name="fullName" placeholder="نام کامل" required />
+                        <input class="border p-2 rounded" id="email" name="email" placeholder="ایمیل" />
+                        <input class="border p-2 rounded" id="phone" name="phone" placeholder="شماره تماس" />
+                        <input class="border p-2 rounded" id="company" name="company" placeholder="شرکت" />
+                    </div>
+                    <textarea class="w-full border rounded p-2" id="note" name="note" rows="3" placeholder="یادداشت"></textarea>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">ذخیره مشتری</button>
+                </form>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+
+    <script>
+        function loadCustomers() {
+            axios.get('/api/customersapi').then(res => {
+                const rows = res.data.map(c => `
+                    <tr class="border-t">
+                        <td class="px-4 py-2">${c.FullName}</td>
+                        <td class="px-4 py-2">${c.Company || '-'}</td>
+                        <td class="px-4 py-2">${c.Phone || '-'}</td>
+                        <td class="px-4 py-2 space-x-2">
+                            <button onclick="editCustomer(${c.Id})" class="text-yellow-600 hover:underline">ویرایش</button>
+                            <button onclick="deleteCustomer(${c.Id})" class="text-red-600 hover:underline">حذف</button>
+                        </td>
+                    </tr>`).join('');
+                document.getElementById("customerList").innerHTML = rows;
+            });
+        }
+
+        function editCustomer(id) {
+            axios.get(`/api/customersapi/${id}`).then(res => {
+                const c = res.data;
+                document.getElementById("customerId").value = c.Id;
+                document.getElementById("fullName").value = c.FullName;
+                document.getElementById("company").value = c.Company;
+                document.getElementById("email").value = c.Email;
+                document.getElementById("phone").value = c.Phone;
+                document.getElementById("note").value = c.Note;
+            });
+        }
+
+        function deleteCustomer(id) {
+            if (confirm("حذف مشتری؟")) axios.delete(`/api/customersapi/${id}`).then(loadCustomers);
+        }
+
+        document.getElementById("customerForm")?.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const id = document.getElementById("customerId").value;
+            const data = {
+                Id: id ? parseInt(id) : 0,
+                FullName: document.getElementById("fullName").value,
+                Email: document.getElementById("email").value,
+                Phone: document.getElementById("phone").value,
+                Company: document.getElementById("company").value,
+                Note: document.getElementById("note").value,
+            };
+
+            const req = id ? axios.put(`/api/customersapi/${id}`, data) : axios.post('/api/customersapi', data);
+            req.then(() => {
+                document.getElementById("customerForm").reset();
+                document.getElementById("customerId").value = '';
+                loadCustomers();
+            }).catch(err => alert("خطا: " + JSON.stringify(err.response?.data)));
+        });
+
+        loadCustomers();
+    </script>
+}
+

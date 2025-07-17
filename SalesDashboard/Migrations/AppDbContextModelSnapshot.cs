@@ -22,40 +22,7 @@ namespace SalesDashboard.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SalesDashboard.Models.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Company")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("SalesDashboard.Models.Invoice", b =>
+            modelBuilder.Entity("Invoice", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -80,7 +47,7 @@ namespace SalesDashboard.Migrations
                     b.ToTable("Invoices");
                 });
 
-            modelBuilder.Entity("SalesDashboard.Models.InvoiceItem", b =>
+            modelBuilder.Entity("InvoiceItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -107,6 +74,35 @@ namespace SalesDashboard.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("InvoicesItem");
+                });
+
+            modelBuilder.Entity("SalesDashboard.Models.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Company")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("SalesDashboard.Models.Product", b =>
@@ -160,7 +156,7 @@ namespace SalesDashboard.Migrations
                     b.ToTable("WarehouseTransfer");
                 });
 
-            modelBuilder.Entity("SalesDashboard.Models.Invoice", b =>
+            modelBuilder.Entity("Invoice", b =>
                 {
                     b.HasOne("SalesDashboard.Models.Customer", "Customer")
                         .WithMany("Invoices")
@@ -171,9 +167,9 @@ namespace SalesDashboard.Migrations
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("SalesDashboard.Models.InvoiceItem", b =>
+            modelBuilder.Entity("InvoiceItem", b =>
                 {
-                    b.HasOne("SalesDashboard.Models.Invoice", "Invoice")
+                    b.HasOne("Invoice", "Invoice")
                         .WithMany("Items")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -201,14 +197,14 @@ namespace SalesDashboard.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Invoice", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("SalesDashboard.Models.Customer", b =>
                 {
                     b.Navigation("Invoices");
-                });
-
-            modelBuilder.Entity("SalesDashboard.Models.Invoice", b =>
-                {
-                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

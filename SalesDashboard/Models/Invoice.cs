@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SalesDashboard.Models;
 
-namespace SalesDashboard.Models
+public class Invoice
 {
-    public class Invoice
-    {
-        public int Id { get; set; }
-        public DateTime Date { get; set; } = DateTime.Now;
+    public int Id { get; set; }
+    public DateTime Date { get; set; } = DateTime.Now;
 
-        public int CustomerId { get; set; }
-        public Customer Customer { get; set; }
+    public int CustomerId { get; set; }
+    public Customer Customer { get; set; }  // حتماً مقداردهی نکن
 
-        public string CreatedBy { get; set; }
-        public ICollection<InvoiceItem> Items { get; set; }
-    }
+    public string CreatedBy { get; set; }
+
+    public ICollection<InvoiceItem> Items { get; set; }
 }
