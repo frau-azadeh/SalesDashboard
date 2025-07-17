@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using SalesDashboard.Data;
 using SalesDashboard.Models;
 
-namespace SalesDashboard.Controllers.Api
+namespace SalesDashboard.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class CustomersApiController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -18,65 +18,73 @@ namespace SalesDashboard.Controllers.Api
 
         // GET: api/customersapi
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
-            var customers = await _context.Customers.AsNoTracking().ToListAsync();
-            return Ok(customers);
+            return await _context.Customers.ToListAsync();
         }
 
         // GET: api/customersapi/5
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Customer>> GetCustomer(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
-            if (customer == null) return NotFound();
-            return Ok(customer);
+            if (customer == null)
+                return NotFound();
+
+            return customer;
         }
 
         // POST: api/customersapi
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Customer customer)
+        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            await _context.Customers.AddAsync(customer);
+            _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer);
+            return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
         }
 
         // PUT: api/customersapi/5
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Customer updated)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCustomer(int id, Customer customer)
         {
-            if (id != updated.Id)
-                return BadRequest("شناسه مشتری ناهماهنگ است.");
+            if (id != customer.Id)
+                return BadRequest();
 
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer == null) return NotFound();
+            _context.Entry(customer).State = EntityState.Modified;
 
-            customer.FullName = updated.FullName;
-            customer.Email = updated.Email;
-            customer.Phone = updated.Phone;
-            customer.Company = updated.Company;
-            customer.Note = updated.Note;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CustomerExists(id))
+                    return NotFound();
+                else
+                    throw;
+            }
 
-            await _context.SaveChangesAsync();
-            return Ok(customer);
+            return NoContent();
         }
 
         // DELETE: api/customersapi/5
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCustomer(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
-            if (customer == null) return NotFound();
+            if (customer == null)
+                return NotFound();
 
             _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        private bool CustomerExists(int id)
+        {
+            return _context.Customers.Any(e => e.Id == id);
         }
     }
 }

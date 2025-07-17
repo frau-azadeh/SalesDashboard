@@ -54,13 +54,13 @@
                     data.forEach(p => {
                         table.innerHTML += `
                             <tr>
-                                <td class="px-6 py-3">${p.id}</td>
-                                <td class="px-6 py-3">${p.name}</td>
-                                <td class="px-6 py-3">${p.price}</td>
-                                <td class="px-6 py-3">${p.stock}</td>
+                                <td class="px-6 py-3">${p.Id}</td>
+                                <td class="px-6 py-3">${p.Name}</td>
+                                <td class="px-6 py-3">${p.Price}</td>
+                                <td class="px-6 py-3">${p.Stock}</td>
                                 <td class="px-6 py-3 space-x-2">
                                     ${isPurchasing ? `
-                                        <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, ${p.stock})" class="text-yellow-600 hover:underline">Edit</button>
+                                        <button onclick="editProduct(${p.Id}, '${p.Name}', ${p.Price}, ${p.Stock})" class="text-yellow-600 hover:underline">Edit</button>
                                         <button onclick="deleteProduct(${p.id})" class="text-red-600 hover:underline">Delete</button>
                                     ` : ''}
                                 </td>

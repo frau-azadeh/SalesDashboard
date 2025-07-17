@@ -8,53 +8,142 @@
 
     <form id="invoiceForm" class="space-y-6">
         <div>
-            <label class="block text-gray-700 mb-1 font-vazir">مشتری:</label>
-            <select id="customerSelect" class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-            </select>
+            <label class="block font-vazir">مشتری:</label>
+            <select id="customerSelect" class="w-full border p-2 rounded"></select>
         </div>
 
         <div class="grid grid-cols-4 gap-4 items-end">
             <div>
-                <label class="block text-gray-700 mb-1 font-vazir">محصول:</label>
-                <select id="productSelect" class="w-full border rounded p-2">
-                </select>
+                <label class="block font-vazir">محصول:</label>
+                <select id="productSelect" class="w-full border p-2 rounded"></select>
             </div>
-
             <div>
-                <label class="block text-gray-700 mb-1 font-vazir">قیمت واحد:</label>
-                <input type="text" id="unitPrice" disabled class="w-full border rounded p-2 bg-gray-100 text-gray-600" />
+                <label class="block font-vazir">قیمت واحد:</label>
+                <input type="text" id="unitPrice" class="w-full border p-2 rounded bg-gray-100" disabled />
             </div>
-
             <div>
-                <label class="block text-gray-700 mb-1 font-vazir">تعداد:</label>
-                <input type="number" id="quantity" class="w-full border rounded p-2" min="1" />
+                <label class="block font-vazir">تعداد:</label>
+                <input type="number" id="quantity" class="w-full border p-2 rounded" />
             </div>
-
-            <button type="button" onclick="addToInvoice()" class="bg-blue-600 text-white rounded px-4 py-2 font-vazir hover:bg-blue-700">
-                افزودن
-            </button>
+            <button type="button" id="addBtn" class="bg-blue-600 text-white px-4 py-2 rounded font-vazir">افزودن</button>
         </div>
 
-        <div class="mt-6">
-            <h3 class="text-lg font-semibold mb-2 font-vazir">لیست اقلام</h3>
-            <table class="min-w-full table-auto border border-gray-200">
-                <thead class="bg-gray-100 text-right">
-                    <tr>
-                        <th class="px-4 py-2">نام محصول</th>
-                        <th class="px-4 py-2">تعداد</th>
-                        <th class="px-4 py-2">قیمت واحد</th>
-                        <th class="px-4 py-2">جمع</th>
-                    </tr>
-                </thead>
-                <tbody id="invoiceItems">
-                </tbody>
-            </table>
-        </div>
+        <table class="mt-6 w-full border">
+            <thead class="bg-gray-100 text-right">
+                <tr>
+                    <th class="p-2">محصول</th>
+                    <th class="p-2">تعداد</th>
+                    <th class="p-2">قیمت</th>
+                    <th class="p-2">جمع</th>
+                </tr>
+            </thead>
+            <tbody id="invoiceItems"></tbody>
+        </table>
 
         <div class="text-right mt-4">
-            <button type="submit" class="bg-green-600 text-white rounded px-6 py-2 font-vazir hover:bg-green-700">
-                ثبت فاکتور
-            </button>
+            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded font-vazir">ثبت فاکتور</button>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        let invoiceItemsList = [];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCustomers();
+            loadProducts();
+
+            document.getElementById("productSelect").addEventListener("change", () => {
+                const selected = event.target.options[event.target.selectedIndex];
+                const price = selected.getAttribute("data-price");
+                document.getElementById("unitPrice").value = price || "";
+            });
+
+            document.getElementById("addBtn").addEventListener("click", () => {
+                const productSelect = document.getElementById("productSelect");
+                const quantityInput = document.getElementById("quantity");
+                const unitPriceInput = document.getElementById("unitPrice");
+                const tableBody = document.getElementById("invoiceItems");
+
+                const ProductId = parseInt(productSelect.value);
+                const ProductName = productSelect.options[productSelect.selectedIndex]?.text || "";
+                const UnitPrice = parseInt(unitPriceInput.value);
+                const Quantity = parseInt(quantityInput.value);
+
+                if (!ProductId || !Quantity || Quantity < 1 || isNaN(UnitPrice)) {
+                    showToast("اطلاعات ناقص است", "#f59e0b");
+                    return;
+                }
+
+                invoiceItemsList.push({ ProductId, Quantity, UnitPrice });
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td class="p-2">${ProductName}</td>
+                        <td class="p-2">${Quantity}</td>
+                        <td class="p-2">${UnitPrice} تومان</td>
+                        <td class="p-2">${Quantity * UnitPrice} تومان</td>
+                    </tr>`;
+
+                quantityInput.value = "";
+
+                console.log("✅ آیتم اضافه شد:", invoiceItemsList);
+            });
+
+            document.getElementById("invoiceForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const customerId = parseInt(document.getElementById("customerSelect").value);
+
+                if (!customerId || invoiceItemsList.length === 0) {
+                    showToast("مشتری و اقلام را وارد کنید", "#f59e0b");
+                    return;
+                }
+
+                try {
+                    const res = await axios.post("/api/invoiceapi", {
+                        CustomerId: customerId,
+                        ProductIds: invoiceItemsList.map(i => i.ProductId),
+                        Quantities: invoiceItemsList.map(i => i.Quantity)
+                    });
+
+                    showToast(res.data.message || "فاکتور با موفقیت ثبت شد", "green");
+                    setTimeout(() => location.reload(), 2000);
+                } catch (err) {
+                    const msg = err.response?.data?.message || err.message;
+                    showToast(msg, "red");
+                }
+            });
+        });
+
+        function loadCustomers() {
+            axios.get("/api/customersapi")
+                .then(res => {
+                    const select = document.getElementById("customerSelect");
+                    select.innerHTML = '<option value="">انتخاب مشتری</option>';
+                    res.data.forEach(c => {
+                        select.innerHTML += `<option value="${c.Id}">${c.FullName}</option>`;
+                    });
+                });
+        }
+
+        function loadProducts() {
+            axios.get("/api/productsapi")
+                .then(res => {
+                    const select = document.getElementById("productSelect");
+                    select.innerHTML = '<option value="">انتخاب محصول</option>';
+                    res.data.forEach(p => {
+                        select.innerHTML += `<option value="${p.Id}" data-price="${p.Price}">${p.Name}</option>`;
+                    });
+                });
+        }
+
+        function showToast(text, color) {
+            Toastify({ text, duration: 3000, gravity: "top", position: "right", backgroundColor: color }).showToast();
+        }
+    </script>
+}
